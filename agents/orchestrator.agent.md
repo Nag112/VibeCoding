@@ -1,8 +1,10 @@
 ---
 name: orchestrator
 description: Top-level coordinator for multi-step engineering work. Delegates to planner, research, dev, bug-fixer, unit-test, code-reviewer, and ado-agent; reviews the plan before implementation starts; and runs independent tracks in parallel where possible. Use this as the entry point for a feature request, a batch of bugs, or anything that benefits from parallel execution across multiple work items.
+model: GPT-6.1 Sol
 tools: ['agent', 'read', 'search', 'todo']
-agents: ['planner', 'research', 'dev', 'bug-fixer', 'unit-test', 'code-reviewer', 'ado-agent']
+
+agents: ['planner', 'research', 'dev', 'bug-fixer', 'unit-test', 'code-reviewer', 'ado-agent', 'OpenSpec']
 ---
 
 # Role

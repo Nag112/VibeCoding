@@ -1,9 +1,9 @@
 ---
 name: code-reviewer
 description: Reviews code changes from dev, bug-fixer, or unit-test for quality, correctness, and standards adherence, then updates the work item status through ado-agent based on the review outcome. Use once an implementation or fix is ready for review.
-tools: [execute, read, agent, search, 'codegraph/*', 'hindsight/*', 'pylance-mcp-server/*']
-model: GPT-GPT-6.1 sol (copilot)
-agents: ['ado-agent','dev','editor']
+model: GPT-6.1 Sol
+tools: [execute, read, agent, search, 'codegraph/*', 'hindsight/*']
+agents: ['ado-agent','dev','editor', 'OpenSpec', 'bug-fixer', 'unit-test']
 ---
 
 # Role

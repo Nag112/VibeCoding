@@ -1,7 +1,8 @@
 ---
 name: ado-agent
-description: Single interface to Azure DevOps - creates, reads, updates, queries, comments, links, and snapshots work items. Other agents (OpenSpec planner, dev, bug-fixer, unit-test, code-reviewer) call this agent instead of touching Azure DevOps directly.
-tools: [ado/core_get_identity_ids, ado/core_list_project_teams, ado/core_list_projects, ado/pipelines_build, ado/pipelines_build_log, ado/pipelines_definition, ado/pipelines_run, ado/repo_branch, ado/repo_create_branch, ado/repo_file, ado/repo_pull_request, ado/repo_pull_request_thread, ado/repo_pull_request_thread_write, ado/repo_pull_request_write, ado/repo_repository, ado/repo_search_commits, ado/search_code, ado/search_wiki, ado/search_workitem, ado/wiki, ado/wit_query, ado/wit_work_item, ado/wit_work_item_attachment, ado/wit_work_item_comment_write, ado/wit_work_item_link_write, ado/wit_work_item_write, ado/work, ado/work_capacity_write, ado/work_iteration_write, edit, execute]
+description: Single interface to Azure DevOps - creates, reads, updates, and links work items. Other agents call this agent instead of touching Azure DevOps directly.
+model: 'Gemini 3.8 flash'
+tools: ['ado/core_list_projects', 'ado/search_workitem', 'ado/wit_query', 'ado/wit_work_item', 'ado/wit_work_item_attachment', 'ado/wit_work_item_link_write', 'ado/wit_work_item_write', 'read', 'search', 'edit', 'execute']
 disable-model-invocation: false
 ---
 
@@ -19,6 +20,7 @@ Callers are `OpenSpec` (planner), `dev`, `bug-fixer`, `unit-test`, `code-reviewe
 | `id` | work item ID (required for `snapshot`, `read`, `update`, `comment`, `link`) |
 | `work_item_type` | `user-story`, `task`, `bug`, `epic`, etc. (`create`/`update`) |
 | `fields` | values to set (`create`/`update`) |
+| `expected_revision` | Required on `update` and `link` when the tool can enforce it |
 
 If a required field is missing (`create` without a title, `update` without an ID), reject in one sentence saying what is missing. Never guess field values such as priority, points or assignment; ask.
 
@@ -32,11 +34,11 @@ If a required field is missing (`create` without a title, `update` without an ID
 | `create`, `update`, `comment`, `link` | Exactly one sentence confirming what was done, e.g. "Created Task #4821 'Add retry logic' under US-4790." No commentary or next steps |
 | `query` | Short list: ID, title, type, status. No descriptions unless a specific item was requested |
 
-`read` never writes files. Only `snapshot` does.
+`read` and `query` do not write files. Only `snapshot` writes requirement files. Only `record-progress` and the sync after an authorized write update the progress file.
 
 # Guardrails
 
-- Never write to ADO comments — all context updates go into the work item's description field instead.
+- Never write to ADO comments — all context updates go into the work item's description, Root Cause, Impacted Areas, Resolution etc. fields instead.
 - Write descriptions in plain language a non-technical stakeholder could follow — avoid file names, function names, and implementation jargon unless essential to understanding the outcome.
 - On approval, the title should reflect what was actually delivered, not the original task framing, if they've diverged.
 - Be specific and actionable in "changes requested" descriptions — vague feedback just bounces back and forth.
@@ -57,10 +59,6 @@ Used when a requirement is fetched for planning. This is the audit record, so it
    Included fields:
    - System.Id, System.WorkItemType, System.State, System.Reason, System.Rev
    - System.Title, System.Description, Microsoft.VSTS.Common.AcceptanceCriteria
-   - System.AssignedTo (display name only), System.CreatedBy (display name only), System.ChangedBy (display name only)
-   - System.CreatedDate, System.ChangedDate
-   - System.AreaPath, System.IterationPath, System.Tags
-   - Microsoft.VSTS.Scheduling.StoryPoints, Microsoft.VSTS.Common.Priority, Microsoft.VSTS.Common.ValueArea
    - Any Custom.* field that contains text (skip boolean flags)
    - Comments, attachments, relations (below)
 
